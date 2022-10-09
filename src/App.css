@@ -36,3 +36,46 @@
     transform: rotate(360deg);
   }
 }
+
+
+.case {
+  width: 50px;
+  height: 50px;
+}
+
+.visible {
+  //background-color: burlywood;
+}
+
+.cachee {
+  background-color: grey;
+}
+
+.case-a{
+  background-color: burlywood;
+}
+
+.case-b{
+  background-color: darkslateblue;
+}
+
+.case-c{
+  background-color: darkolivegreen;
+}
+
+.case-d{
+  background-color: darkcyan;
+}
+
+.case-e{
+  background-color: cadetblue;
+}
+
+.case-f{
+  background-color: brown;
+}
+
+.case-g{
+  background-color: coral;
+}
+

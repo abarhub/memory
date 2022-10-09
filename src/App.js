@@ -2,29 +2,14 @@ import logo from './logo.svg';
 import './App.css';
 import React from "react";
 
-// var elems= ["a","b","c"]
-//
-// let nb=4;
-//
-// let tab=[];
-// let tabVisible=[];
-// for (let i=0;i<nb;i++){
-//   let row=[];
-//   let row2=[];
-//   tab.push(row);
-//   tabVisible.push(row2);
-//   for(let j=0;j<nb;j++){
-//     row.push("A");
-//     row2.push(false);
-//   }
-// }
-
-// function coche(indexRow,indexColumn) {
-//   if(indexRow>=0&&indexColumn>=0) {
-//     console.info('coche',indexRow,indexColumn);
-//     tabVisible[indexRow, indexColumn] = true;
-//   }
-// }
+class Case {
+    constructor(text, visible, row, column) {
+        this.text = text;
+        this.visible = visible;
+        this.row = row;
+        this.column = column;
+    }
+}
 
 class CaseAffichage extends React.Component {
 
@@ -43,17 +28,28 @@ class CaseAffichage extends React.Component {
         }
     }
 
+    classeAAjouter(text) {
+        let res = '';
+        if (text && text.length > 0) {
+            res = 'case-' + text;
+        }
+        return res;
+    }
+
     render() {
         const indexRow = this.props.indexRow;
         const indexColumn = this.props.indexColumn;
         const elem = this.props.elem;
-        const visible = this.props.visible;
+        const visible = elem.visible;
         if (visible) {
-            return <td>{elem}-{indexRow}-{indexColumn}</td>
+            let classe = 'case visible';
+            classe += ' ' + this.classeAAjouter(elem.text);
+            return <td className={classe}>{elem.text}</td>
         } else {
-            return <td onClick={this.coche.bind(this)}>*-{indexRow}-{indexColumn}</td>
+            return <td className="case cachee" onClick={this.coche.bind(this)}> </td>
         }
     }
+
 }
 
 class GrilleAffiche extends React.Component {
@@ -62,48 +58,119 @@ class GrilleAffiche extends React.Component {
         super(props);
         const nb = props.nb;
         const tab = [];
-        const tabVisible = [];
         for (let i = 0; i < nb; i++) {
             let row = [];
-            let row2 = [];
             tab.push(row);
-            tabVisible.push(row2);
             for (let j = 0; j < nb; j++) {
-                row.push("A");
-                row2.push(false);
+                row.push(new Case("", false, i, j));
             }
         }
-        this.state = {tab: tab, tabVisible: tabVisible, nb: nb};
+        this.initialiseTableau(tab, nb);
+        this.state = {tab: tab, nb: nb, derniereCase: null};
         this.cocheCase = this.cocheCase.bind(this);
     }
 
+    initialiseTableau(tab, nb) {
+        let text = 'a';
+        let no = 0;
+        for (let i = 0; i < nb; i++) {
+            for (let j = 0; j < nb; j++) {
+                tab[i][j].text = text;
+                if ((no + 1) % 2 === 0) {
+                    text = this.nextChar(text.charAt(0));
+                }
+                no++;
+            }
+        }
+        for (let i = 0; i < no; i++) {
+            const pos = Math.floor(Math.random() * no);
+            const decalage = Math.floor(Math.random() * no) + 1;
+            const pos2 = (pos + decalage) % no;
+            const pos01 = this.getPos(pos, nb);
+            const pos02 = this.getPos(pos2, nb);
+            const text1 = tab[pos01.row][pos01.columns].text;
+            const text2 = tab[pos02.row][pos02.columns].text;
+            tab[pos01.row][pos01.columns].text = text2;
+            tab[pos02.row][pos02.columns].text = text1;
+        }
+    }
+
+    getPos(pos, nb) {
+        return {
+            row: Math.floor(pos / nb),
+            columns: pos % nb
+        };
+    }
+
+    nextChar(c) {
+        var i = (parseInt(c, 36) + 1) % 36;
+        return (!i * 10 + i).toString(36);
+    }
+
     cocheCase = (indexRow, indexColumn) => {
-        console.info('GrilleAffiche.cocheCase', indexRow, indexColumn, this.state.tabVisible);
         if (indexRow >= 0 && indexColumn >= 0 && this && this.state) {
-            console.info('coche', indexRow, indexColumn);
             const tab = [];
             const nb = this.state.nb;
+            let derniereCase = null;
+            let precedanteDerniereCase = this.state.derniereCase;
             for (let i = 0; i < nb; i++) {
                 let row = [];
                 tab.push(row);
                 for (let j = 0; j < nb; j++) {
-                    if (i == indexRow && j == indexColumn) {
-                        row.push(true);
+                    let visible = false
+                    if (i === indexRow && j === indexColumn) {
+                        visible = true;
+                        derniereCase = this.state.tab[i][j];
                     } else {
-                        row.push(this.state.tabVisible[indexRow][indexColumn]);
+                        visible = this.state.tab[i][j].visible;
                     }
+                    row.push(new Case(this.state.tab[i][j].text, visible, i, j));
                 }
             }
-            console.info('GrilleAffiche.cocheCase fin', indexRow, indexColumn, tab);
-            this.setState({tabVisible: tab});
+            this.setState({
+                tab: tab,
+                derniereCase: (precedanteDerniereCase != null) ? null : derniereCase
+            });
+            if (precedanteDerniereCase != null) {
+                if (precedanteDerniereCase.text !== derniereCase.text) {
+                    // les 2 cases ne sont pas les mêmes => elles sont cachées
+                    let m = this;
+                    let call = () => {
+                        m.rollback(precedanteDerniereCase.row, precedanteDerniereCase.column,
+                            derniereCase.row, derniereCase.column);
+                    }
+                    setTimeout(call, 500);
+                } else {
+                    // les 2 cases sont identiques => on les laisse affichées
+                }
+            }
         }
+    }
+
+    /**
+     * cache les 2 cases
+      */
+    rollback(row1, col1, row2, col2) {
+        const tab = [];
+        const nb = this.state.nb;
+        for (let i = 0; i < nb; i++) {
+            let row = [];
+            tab.push(row);
+            for (let j = 0; j < nb; j++) {
+                let visible = false;
+                visible = this.state.tab[i][j].visible;
+                row.push(new Case(this.state.tab[i][j].text, visible, i, j));
+            }
+        }
+        tab[row1][col1].visible = false;
+        tab[row2][col2].visible = false;
+        this.setState({tab: tab, derniereCase: null});
     }
 
 
     render() {
 
         let m = this;
-        console.log('click render', m.props, this.props, this.state);
 
         return <table border="1">
             <tbody>
@@ -114,7 +181,6 @@ class GrilleAffiche extends React.Component {
                             row.map(function (elem, indexColumn) {
                                 return <CaseAffichage indexRow={indexRow} indexColumn={indexColumn}
                                                       elem={elem}
-                                                      visible={m.state.tabVisible[indexRow][indexColumn]}
                                                       click={() => m.cocheCase(indexRow, indexColumn)}
                                                       key={indexColumn}
                                 ></CaseAffichage>
@@ -135,19 +201,7 @@ function App() {
         <div className="App">
             <header className="App-header">
                 <img src={logo} className="App-logo" alt="logo"/>
-                <p>
-                    Edit <code>src/App.js</code> and save to reload.
-                </p>
-                <a
-                    className="App-link"
-                    href="https://reactjs.org"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    Learn React
-                </a>
-                <hr/>
-                <GrilleAffiche nb={4}></GrilleAffiche>
+                <GrilleAffiche nb={5}></GrilleAffiche>
             </header>
         </div>
     );
