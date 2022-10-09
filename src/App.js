@@ -13,10 +13,6 @@ class Case {
 
 class CaseAffichage extends React.Component {
 
-    constructor(props) {
-        super(props);
-    }
-
     coche() {
         const indexRow = this.props.indexRow;
         const indexColumn = this.props.indexColumn;
@@ -37,8 +33,6 @@ class CaseAffichage extends React.Component {
     }
 
     render() {
-        const indexRow = this.props.indexRow;
-        const indexColumn = this.props.indexColumn;
         const elem = this.props.elem;
         const visible = elem.visible;
         if (visible) {
@@ -201,7 +195,7 @@ function App() {
         <div className="App">
             <header className="App-header">
                 <img src={logo} className="App-logo" alt="logo"/>
-                <GrilleAffiche nb={5}></GrilleAffiche>
+                <GrilleAffiche nb={6}></GrilleAffiche>
             </header>
         </div>
     );
