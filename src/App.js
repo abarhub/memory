@@ -40,7 +40,7 @@ class CaseAffichage extends React.Component {
             classe += ' ' + this.classeAAjouter(elem.text);
             return <td className={classe}>{elem.text}</td>
         } else {
-            return <td className="case cachee" onClick={this.coche.bind(this)}> </td>
+            return <td className="case cachee" onClick={this.coche.bind(this)}></td>
         }
     }
 
@@ -50,6 +50,7 @@ class GrilleAffiche extends React.Component {
 
     constructor(props) {
         super(props);
+        // création du tableau
         const nb = props.nb;
         const tab = [];
         for (let i = 0; i < nb; i++) {
@@ -59,11 +60,17 @@ class GrilleAffiche extends React.Component {
                 row.push(new Case("", false, i, j));
             }
         }
+        // initialisation des valeurs aléatoires du tableau
         this.initialiseTableau(tab, nb);
         this.state = {tab: tab, nb: nb, derniereCase: null};
         this.cocheCase = this.cocheCase.bind(this);
     }
 
+    /**
+     * Initialisation avec des valeurs aléatoires du tableau
+     * @param tab le tableau à initialiser
+     * @param nb le nombre de ligne et de colonnes du tableau
+     */
     initialiseTableau(tab, nb) {
         let text = 'a';
         let no = 0;
@@ -143,7 +150,7 @@ class GrilleAffiche extends React.Component {
 
     /**
      * cache les 2 cases
-      */
+     */
     rollback(row1, col1, row2, col2) {
         const tab = [];
         const nb = this.state.nb;
