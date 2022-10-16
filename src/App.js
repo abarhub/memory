@@ -8,6 +8,8 @@ class Case {
         this.visible = visible;
         this.row = row;
         this.column = column;
+        this.backgroundColor = '';
+        this.color = '';
     }
 }
 
@@ -37,8 +39,12 @@ class CaseAffichage extends React.Component {
         const visible = elem.visible;
         if (visible) {
             let classe = 'case visible';
-            classe += ' ' + this.classeAAjouter(elem.text);
-            return <td className={classe}>{elem.text}</td>
+            //classe += ' ' + this.classeAAjouter(elem.text);
+            let style = '';
+            if (elem.color) {
+                style = {color: elem.color};
+            }
+            return <td className={classe} style={{backgroundColor: elem.color}}>{elem.text}</td>
         } else {
             return <td className="case cachee" onClick={this.coche.bind(this)}></td>
         }
@@ -57,11 +63,14 @@ class GrilleAffiche extends React.Component {
             let row = [];
             tab.push(row);
             for (let j = 0; j < nb; j++) {
-                row.push(new Case("", false, i, j));
+                let case0 = new Case("", false, i, j);
+                case0.color = '';
+                row.push(case0);
             }
         }
         // initialisation des valeurs aléatoires du tableau
         this.initialiseTableau(tab, nb);
+        // initialisation du state
         this.state = {tab: tab, nb: nb, derniereCase: null};
         this.cocheCase = this.cocheCase.bind(this);
     }
@@ -72,28 +81,62 @@ class GrilleAffiche extends React.Component {
      * @param nb le nombre de ligne et de colonnes du tableau
      */
     initialiseTableau(tab, nb) {
-        let text = 'a';
+
+        const textePossibles = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        const couleursPossibles = this.getListColor(Math.ceil(nb * nb / 2));
+        console.log('couleursPossibles', couleursPossibles);
         let no = 0;
+        let no2 = 0;
+        let text = textePossibles.charAt(no2);
         for (let i = 0; i < nb; i++) {
             for (let j = 0; j < nb; j++) {
                 tab[i][j].text = text;
+                tab[i][j].color = couleursPossibles[no2];
                 if ((no + 1) % 2 === 0) {
-                    text = this.nextChar(text.charAt(0));
+                    no2++;
+                    text = textePossibles.charAt(no2);
                 }
                 no++;
             }
         }
-        for (let i = 0; i < no; i++) {
+        for (let i = 0; i < no * 2; i++) {
             const pos = Math.floor(Math.random() * no);
             const decalage = Math.floor(Math.random() * no) + 1;
             const pos2 = (pos + decalage) % no;
             const pos01 = this.getPos(pos, nb);
             const pos02 = this.getPos(pos2, nb);
             const text1 = tab[pos01.row][pos01.columns].text;
+            const color1 = tab[pos01.row][pos01.columns].color;
             const text2 = tab[pos02.row][pos02.columns].text;
+            const color2 = tab[pos02.row][pos02.columns].color;
             tab[pos01.row][pos01.columns].text = text2;
+            tab[pos01.row][pos01.columns].color = color2;
             tab[pos02.row][pos02.columns].text = text1;
+            tab[pos02.row][pos02.columns].color = color1;
         }
+    }
+
+    // retourne un nuancier de couleur
+    getListColor(max) {
+        let tab = [];
+        let decoupeLuminance = 3;
+        const n = Math.ceil(360 / max);
+
+        for (let i = 0; i < decoupeLuminance; i++) {
+            let luminance = '';
+            if (i === 0) {
+                luminance = '30%';
+            } else if (i === 1) {
+                luminance = '40%';
+            } else {
+                luminance = '50%';
+            }
+            let no = 0;
+            for (let j = 0; j < Math.ceil(max / decoupeLuminance); j++) {
+                tab.push('hsl(' + (n * j) + ',' + luminance + ',40%)');
+            }
+        }
+        return tab;
     }
 
     getPos(pos, nb) {
@@ -125,7 +168,9 @@ class GrilleAffiche extends React.Component {
                     } else {
                         visible = this.state.tab[i][j].visible;
                     }
-                    row.push(new Case(this.state.tab[i][j].text, visible, i, j));
+                    let case0 = new Case(this.state.tab[i][j].text, visible, i, j);
+                    case0.color = this.state.tab[i][j].color;
+                    row.push(case0);
                 }
             }
             this.setState({
@@ -160,7 +205,9 @@ class GrilleAffiche extends React.Component {
             for (let j = 0; j < nb; j++) {
                 let visible = false;
                 visible = this.state.tab[i][j].visible;
-                row.push(new Case(this.state.tab[i][j].text, visible, i, j));
+                let case0 = new Case(this.state.tab[i][j].text, visible, i, j);
+                case0.color = this.state.tab[i][j].color;
+                row.push(case0);
             }
         }
         tab[row1][col1].visible = false;
