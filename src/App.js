@@ -71,7 +71,7 @@ class GrilleAffiche extends React.Component {
         // initialisation des valeurs aléatoires du tableau
         this.initialiseTableau(tab, nb);
         // initialisation du state
-        this.state = {tab: tab, nb: nb, derniereCase: null};
+        this.state = {tab: tab, nb: nb, derniereCase: null, desactiveClick: false};
         this.cocheCase = this.cocheCase.bind(this);
     }
 
@@ -152,7 +152,7 @@ class GrilleAffiche extends React.Component {
     }
 
     cocheCase = (indexRow, indexColumn) => {
-        if (indexRow >= 0 && indexColumn >= 0 && this && this.state) {
+        if (indexRow >= 0 && indexColumn >= 0 && this && this.state && !this.state.desactiveClick) {
             const tab = [];
             const nb = this.state.nb;
             let derniereCase = null;
@@ -181,9 +181,15 @@ class GrilleAffiche extends React.Component {
                 if (precedanteDerniereCase.text !== derniereCase.text) {
                     // les 2 cases ne sont pas les mêmes => elles sont cachées
                     let m = this;
+                    this.setState({
+                        desactiveClick: true
+                    });
                     let call = () => {
                         m.rollback(precedanteDerniereCase.row, precedanteDerniereCase.column,
                             derniereCase.row, derniereCase.column);
+                        this.setState({
+                            desactiveClick: false
+                        });
                     }
                     setTimeout(call, 500);
                 } else {
