@@ -71,8 +71,26 @@ class GrilleAffiche extends React.Component {
         // initialisation des valeurs aléatoires du tableau
         this.initialiseTableau(tab, nb);
         // initialisation du state
-        this.state = {tab: tab, nb: nb, derniereCase: null, desactiveClick: false};
+        this.state = {tab: tab, nb: nb, derniereCase: null, desactiveClick: false, showModal:false};
         this.cocheCase = this.cocheCase.bind(this);
+    }
+
+    initialisation(nbCases){
+        const tab = [];
+        for (let i = 0; i < nbCases; i++) {
+            let row = [];
+            tab.push(row);
+            for (let j = 0; j < nbCases; j++) {
+                let case0 = new Case("", false, i, j);
+                case0.color = '';
+                row.push(case0);
+            }
+        }
+        // initialisation des valeurs aléatoires du tableau
+        this.initialiseTableau(tab, nbCases);
+        this.setState({
+            tab: tab, nb: nbCases, derniereCase: null, desactiveClick: false, showModal:false
+        });
     }
 
     /**
@@ -221,30 +239,73 @@ class GrilleAffiche extends React.Component {
         this.setState({tab: tab, derniereCase: null});
     }
 
+    openModal = () => this.setState({ isOpen: true });
+    closeModal = () => this.setState({ isOpen: false });
+
+    nouvelleGrille(){
+        const nbCases = document.getElementById('nbCases')
+
+        const nb=nbCases.value;
+        console.log("nb",nb);
+        if(nb>4){
+            this.initialisation(nb);
+        }
+        this.closeModal();
+    }
 
     render() {
 
         let m = this;
 
-        return <table border="1">
-            <tbody>
-            {
-                this.state.tab.map(function (row, indexRow) {
-                    return <tr>
+        return <div>
+                <div>
+                    <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" onClick={m.openModal}>
+                        Launch demo modal
+                    </button>
+                    { this.state.isOpen ?
+                        <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel"
+                         aria-hidden="true" >
+                        <div className="modal-dialog">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h1 className="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                                    <button type="button" className="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                </div>
+                                <div className="modal-body">
+                                    <div>Nb Cases : <input type={"number"} id={"nbCases"} value="6"/></div>
+                                </div>
+                                <div className="modal-footer">
+                                    <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={m.closeModal}>Close</button>
+                                    <button type="button" className="btn btn-primary" onClick={()=>m.nouvelleGrille()}>Save changes</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                        : null }
+                </div>
+                <div>
+                    <table border="1">
+                        <tbody>
                         {
-                            row.map(function (elem, indexColumn) {
-                                return <CaseAffichage indexRow={indexRow} indexColumn={indexColumn}
-                                                      elem={elem}
-                                                      click={() => m.cocheCase(indexRow, indexColumn)}
-                                                      key={indexColumn}
-                                ></CaseAffichage>
+                            this.state.tab.map(function (row, indexRow) {
+                                return <tr>
+                                    {
+                                        row.map(function (elem, indexColumn) {
+                                            return <CaseAffichage indexRow={indexRow} indexColumn={indexColumn}
+                                                                  elem={elem}
+                                                                  click={() => m.cocheCase(indexRow, indexColumn)}
+                                                                  key={indexColumn}
+                                            ></CaseAffichage>
+                                        })
+                                    }
+                                </tr>
                             })
                         }
-                    </tr>
-                })
-            }
-            </tbody>
-        </table>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
     }
 
